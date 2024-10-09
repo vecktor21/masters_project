@@ -1,0 +1,135 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.1.0" />
+    <PackageReference Include="Neo4j.Driver" Version="5.24.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Standarts\Default 1_ Администрирование баз данных.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Default 2_ Бизнес-анализ в информационно-коммуникационных технологиях.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Default 3_ Информационная безопасность.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Default 5_ Обеспечение сопровождения программного обеспечения.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Default 7_ Разработка программного обеспечения.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Default 8_ Разработка технической документации.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Default 9_ Системное и сетевое администрирование.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 11_ Специалисты-профессионалы по без.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 13_ Администрирование графических и операционных систем.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 14_ Инфраструктура компьютерных систем.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 15_ Разработка IoT систем.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 16_ Разработка графического и мультимедийного дизайна.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 17_ Разработка приложений искусственного интеллекта.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 18_ Разработка систем обработки и хранения больших данных.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 19_ Разработки по облачным технологиям.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 20_ Сопровождение программного обеспечения.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 21_ Тестирование мультимедийных приложений %28включая компьютерные игры%29.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 22_ Тестирование программного обеспечения.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 23_ Управление архитектурой компьютерных систем.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 24_Обслуживание и программное сопровождение роботов.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 25_Сопровождение и ремонт HardWare.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 26_Техническое сопровождение электроники.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 32 Разработка высоконагруженных и real-time приложений.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 36 Тестирование Web и мультимедийных приложений.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 37 Разработка геоинформационных систем.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 40 Создание и управление информационными технологиями.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 43 Администрирование и сопровождение Web.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 45 Поддержка пользователей ИТ.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 46 Управление и проектирование.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 47 Техническое сопровождение.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 48 Разработка чертежей электроники.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 4_ Обеспечение безопасности информационной инфраструктуры и ИТ.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\Kind2 6_ Проведение веб-мониторинга.docx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\PdfDefault 54_ ПС Архитекторы ПО.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\PdfDefault 55_ ПС Разработчики ПО и спец по тестированию, WEB и МП.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\PdfDefault 56_ ПС Дизайнеры БД и администраторы.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\PdfDefault 57_ ПС Сетевые, сист-е админы и админы серверов.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\PdfDefault 58_ ПС Бизнес аналитики и управление проектами.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Standarts\PdfDefault 8 ПС_Создание и управление ИР.pdf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
