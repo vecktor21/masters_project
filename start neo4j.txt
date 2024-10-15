@@ -1,4 +1,4 @@
 docker run --publish=7474:7474 --publish=7687:7687 --env NEO4J_AUTH=neo4j/your_password --name test_diplom --volume=nirm_neo4j:/data neo4j:5.20.0
 
 --без волюма
-docker run --publish=7474:7474 --publish=7687:7687 --env NEO4J_AUTH=neo4j/your_password --name test_diplom neo4j:5.20.0
+docker run -d --publish=7474:7474 --publish=7687:7687 --env NEO4J_AUTH=neo4j/your_password --name test_diplom neo4j:5.20.0

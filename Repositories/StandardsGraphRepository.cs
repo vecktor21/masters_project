@@ -101,12 +101,15 @@ namespace Diplom.Repositories
                             MERGE (s:Skill {Name: $skill})
                             WITH s
                             MATCH (f:PositionFunction {FunctionName: $functionName})
-                            MERGE (f)-[:REQUIRES_SKILL]->(s) return s";
+                            MERGE (f)-[r:REQUIRES_SKILL{OrkLevel:$level}]->(s)
+                            ON CREATE SET r.OrkLevel=$level
+                            return s";
 
                             var skillRes = await tx.RunAsync(createSkillQuery, new
                             {
                                 skill,
-                                functionName = function.FunctionName
+                                functionName = function.FunctionName,
+                                level = (int)card.OrkCvalificationLevel
                             });
                             var k = await skillRes.ToListAsync();
                         }
@@ -118,12 +121,15 @@ namespace Diplom.Repositories
                             MERGE (k:Knowledge {Name: $knowledge})
                             WITH k
                             MATCH (f:PositionFunction {FunctionName: $functionName})
-                            MERGE (f)-[:REQUIRES_KNOWLEDGE]->(k) return k";
+                            MERGE (f)-[r:REQUIRES_KNOWLEDGE{OrkLevel:$level}]->(k) 
+                            ON CREATE SET r.OrkLevel=$level
+                            return k";
 
                             var knowledgeRes = await tx.RunAsync(createKnowledgeQuery, new
                             {
                                 knowledge,
-                                functionName = function.FunctionName
+                                functionName = function.FunctionName,
+                                level = (int)card.OrkCvalificationLevel
                             });
                             var k = await knowledgeRes.ToListAsync();
                         }

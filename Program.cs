@@ -1,10 +1,14 @@
 using Diplom.Options;
 using Diplom.Repositories;
 using Diplom.Services;
+using Serilog;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 var config = builder.Configuration;
+
+builder.Services.AddSerilog(x=> x.WriteTo.Console());
 
 builder.Services.Configure<Neo4jSettings>(config.GetSection("neo4j"));
 builder.Services.AddScoped<StandardsGraphRepository>();
