@@ -48,3 +48,15 @@ return
 //c_name, 
 //в разрезе функции
 f_name,k_name, count(*)
+
+
+--просмотр навыков по уровням
+match(p:PositionCard)-[hf:HAS_FUNCTION]->(f:PositionFunction),
+(f)-[rk:REQUIRES_SKILL]->(k:Skill)
+return p.Name, f.FunctionName, collect(distinct hf.OrkLevel) as function_levels, collect(distinct rk.OrkLevel) as skill_levels, k.Name
+
+
+--просмотр знаний по уровням
+match(p:PositionCard)-[hf:HAS_FUNCTION]->(f:PositionFunction),
+(f)-[rk:REQUIRES_KNOWLEDGE]->(k:Knowledge)
+return p.Name, f.FunctionName, collect(distinct hf.OrkLevel) as function_levels, collect(distinct rk.OrkLevel) as knowledge_levels, k.Name
