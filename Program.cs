@@ -13,6 +13,8 @@ builder.Services.AddSerilog(x=> x.WriteTo.Console());
 builder.Services.Configure<Neo4jSettings>(config.GetSection("neo4j"));
 builder.Services.AddScoped<StandardsGraphRepository>();
 
+builder.Services.AddCors();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -27,6 +29,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors(pol =>
+{
+    pol.AllowAnyMethod();
+    pol.AllowAnyOrigin();
+    pol.AllowAnyHeader();
+});
 
 app.UseHttpsRedirection();
 

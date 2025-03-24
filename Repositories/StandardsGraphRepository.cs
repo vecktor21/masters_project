@@ -1,4 +1,5 @@
 ﻿using Diplom.Constants;
+using Diplom.Dto;
 using Diplom.Models;
 using Diplom.Options;
 using Microsoft.Extensions.Options;
@@ -166,6 +167,120 @@ namespace Diplom.Repositories
                 }
             });
         }
+
+        public async Task<PositionStandartDto?> GetPositionStandartByNameAsync(string positionStandartName,
+            OrkCvalificationLevelEnum orkLevel)
+        {
+            await using var session = _driver.AsyncSession();
+
+            var query = @"
+            MATCH (ps:PositionStandart {Name: $name})
+            OPTIONAL MATCH (ps)-[:HAS_CARD]->(card:PositionCard)
+            MATCH (card)-[:HAS_ORK_LEVEL]->(ork:OrkLevel {Level: $level})
+            OPTIONAL MATCH (card)-[:HAS_FUNCTION {OrkLevel: ork.Level}]->(func:PositionFunction)
+            OPTIONAL MATCH (func)-[:REQUIRES_SKILL {OrkLevel: ork.Level}]->(skill:Skill)
+            OPTIONAL MATCH (func)-[:REQUIRES_KNOWLEDGE {OrkLevel: ork.Level}]->(knowledge:Knowledge)
+            RETURN ps, card, ork, func, skill, knowledge";
+
+            var result = await session.RunAsync(query, new { name = positionStandartName, level = (int)orkLevel });
+
+            var positionStandart = new PositionStandartDto();
+            var positionCards = new Dictionary<string, PositionCardDto>();
+            var positionFunctions = new Dictionary<string, PositionFunctionDto>();
+
+            await foreach (var record in result)
+            {
+                // Populate PositionStandart
+                if (positionStandart.Name == null)
+                {
+                    var ps = record["ps"].As<INode>();
+                    positionStandart = new PositionStandartDto
+                    {
+                        Name = ps["Name"].As<string>(),
+                        StandartDevelopmentGoal = ps["StandartDevelopmentGoal"].As<string>(),
+                        StandartDescription = ps["StandartDescription"].As<string>(),
+                        GeneralInfo = ps["GeneralInfo"].As<string>()
+                    };
+                }
+
+                // Process PositionCard
+                if (record["card"] is INode cardNode)
+                {
+                    var cardName = cardNode["Name"].As<string>();
+                    if (!positionCards.ContainsKey(cardName))
+                    {
+                        positionCards[cardName] = new PositionCardDto
+                        {
+                            Name = cardName,
+                            Code = cardNode["Code"].As<string>(),
+                            KsCvalificationLevel = cardNode["KsCvalificationLevel"].As<string>()
+                        };
+                    }
+
+                    // Check if OrkLevel node exists before accessing it
+                    if (record["ork"] is INode orkNode)
+                    {
+                        positionCards[cardName].OrkCvalificationLevel = orkNode["Level"].As<string>();
+                    }
+
+                    // Process PositionFunction
+                    if (record["func"] is INode funcNode)
+                    {
+                        var functionName = funcNode["FunctionName"].As<string>();
+                        if (!positionFunctions.ContainsKey(functionName))
+                        {
+                            positionFunctions[functionName] = new PositionFunctionDto
+                            {
+                                FunctionName = functionName
+                            };
+                        }
+
+                        // Process Skills
+                        if (record["skill"] is INode skillNode)
+                        {
+                            var skillName = skillNode["Name"].As<string>();
+                            if (!positionFunctions[functionName].Skills.Contains(skillName))
+                            {
+                                positionFunctions[functionName].Skills.Add(skillName);
+                            }
+                        }
+
+                        // Process Knowledges
+                        if (record["knowledge"] is INode knowledgeNode)
+                        {
+                            var knowledgeName = knowledgeNode["Name"].As<string>();
+                            if (!positionFunctions[functionName].Knowledges.Contains(knowledgeName))
+                            {
+                                positionFunctions[functionName].Knowledges.Add(knowledgeName);
+                            }
+                        }
+
+                        positionCards[cardName].Functions.Add(positionFunctions[functionName]);
+                    }
+                }
+            }
+
+            positionStandart.Cards = positionCards.Values.ToList();
+            return positionStandart;
+        }
+
+        public async Task<List<string>> GetAllPositionStandardNamesAsync()
+        {
+            var names = new List<string>();
+
+            var query = "MATCH (ps:PositionStandart) RETURN ps.Name AS Name";
+
+            await using var session = _driver.AsyncSession();
+            var result = await session.RunAsync(query);
+
+            await result.ForEachAsync(record =>
+            {
+                names.Add(record["Name"].As<string>());
+            });
+
+            return names;
+        }
+
 
         public void Dispose()
         {
