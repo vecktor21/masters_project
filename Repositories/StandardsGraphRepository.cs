@@ -281,6 +281,82 @@ namespace Diplom.Repositories
             return names;
         }
 
+        public async Task<List<string>> GetAllPositionCardNamesAsync()
+        {
+            var names = new List<string>();
+
+            var query = "MATCH (ps:PositionCard) RETURN ps.Name AS Name";
+
+            await using var session = _driver.AsyncSession();
+            var result = await session.RunAsync(query);
+
+            await result.ForEachAsync(record =>
+            {
+                names.Add(record["Name"].As<string>());
+            });
+
+            return names;
+        }
+
+
+        public async Task<RoadmapDto> GetProfessionalRoadmap(string professionName)
+        {
+            var query = @"
+        MATCH (pc:PositionCard {Name: $professionName})-[:HAS_FUNCTION]->(pf:PositionFunction)
+        MATCH (pc)-[:HAS_ORK_LEVEL]->(ork:OrkLevel)
+        OPTIONAL MATCH (pf)-[:REQUIRES_SKILL {OrkLevel: ork.Level}]->(s:Skill)
+        OPTIONAL MATCH (pf)-[:REQUIRES_KNOWLEDGE {OrkLevel: ork.Level}]->(k:Knowledge)
+        RETURN pc, ork.Level AS OrkLevel, 
+               COLLECT(DISTINCT s.Name) AS Skills, 
+               COLLECT(DISTINCT k.Name) AS Knowledge
+        ORDER BY OrkLevel ASC";
+
+
+            var roadmap = new RoadmapDto { ProfessionName = professionName };
+            OrkLevelRoadmap? previousLevel = null;
+            OrkLevelRoadmap? firstLevel = null;
+
+            using var session = _driver.AsyncSession();
+            var result = await session.RunAsync(query, new { professionName });
+
+            await foreach (var record in result)
+            {
+                int orkLevelValue = record["OrkLevel"].As<int>();
+
+                // Create PositionCard
+                var pcNode = record["pc"].As<INode>();
+                var positionCard = new ProfessionalCardRoadmap
+                {
+                    //PositionCardName = pcNode["Name"].As<string>(),
+                    //Code = pcNode["Code"].As<string>(),
+                    RequiredSkills = record["Skills"].As<List<string>>(),
+                    RequiredKnowledge = record["Knowledge"].As<List<string>>()
+                };
+
+                // Create ORK Level Roadmap
+                var orkLevel = new OrkLevelRoadmap
+                {
+                    OrkLevel = (OrkCvalificationLevelEnum)orkLevelValue,
+                    PositionCards = positionCard // Assign single object
+                };
+
+                // Link previous level to current one
+                if (previousLevel != null)
+                {
+                    previousLevel.NextLevel = orkLevel;
+                }
+                else
+                {
+                    firstLevel = orkLevel;
+                }
+
+                previousLevel = orkLevel;
+            }
+
+            roadmap.OrkLevel = firstLevel;
+            return roadmap;
+        }
+
 
         public void Dispose()
         {
