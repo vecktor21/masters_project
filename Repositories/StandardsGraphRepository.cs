@@ -505,6 +505,54 @@ namespace Diplom.Repositories
             return knowledges;
         }
 
+        public async Task<List<RemainingDataDto>> GetRemainingSkillsKnowledges(string positionCard, string[] knownSkills, string[] knownKnowledges)
+        {
+            var query = @"WITH $knownSkills AS knownSkills, 
+                     $knownKnowledges AS knownKnowledges, 
+                     $positionCard AS targetName
+                MATCH (pc:PositionCard {Name: targetName})-[:HAS_FUNCTION]->(pf:PositionFunction)
+                OPTIONAL MATCH (pf)-[rs:REQUIRES_SKILL]->(skill:Skill)
+                OPTIONAL MATCH (pf)-[rk:REQUIRES_KNOWLEDGE]->(knowledge:Knowledge)
+                WITH pf, rs, rk, skill, knowledge, knownSkills, knownKnowledges
+                WHERE (skill IS NULL OR NOT skill.Name IN knownSkills)
+                   OR (knowledge IS NULL OR NOT knowledge.Name IN knownKnowledges)
+                WITH 
+                  COALESCE(rs.OrkLevel, rk.OrkLevel) AS orkLevel,
+                  CASE 
+                    WHEN skill IS NOT NULL AND NOT skill.Name IN knownSkills 
+                    THEN skill.Name ELSE NULL 
+                  END AS missingSkill,
+                  CASE 
+                    WHEN knowledge IS NOT NULL AND NOT knowledge.Name IN knownKnowledges 
+                    THEN knowledge.Name ELSE NULL 
+                  END AS missingKnowledge
+                WITH orkLevel,
+                     COLLECT(DISTINCT missingSkill) AS allMissingSkills,
+                     COLLECT(DISTINCT missingKnowledge) AS allMissingKnowledges
+                RETURN 
+                  orkLevel,
+                  [s IN allMissingSkills WHERE s IS NOT NULL] AS missingSkills,
+                  [k IN allMissingKnowledges WHERE k IS NOT NULL] AS missingKnowledges
+                ORDER BY orkLevel";
+            
+            var res = new List<RemainingDataDto>();
+
+            await using var session = _driver.AsyncSession();
+            var result = await session.RunAsync(query, new { knownSkills, knownKnowledges, positionCard});
+
+            await result.ForEachAsync(record =>
+            {
+                var remaining = new RemainingDataDto();
+                remaining.OrkLevel = record["orkLevel"].As<int>();
+                remaining.RemainingKnowledges = record["missingKnowledges"].As<List<string>>();
+                remaining.RemainingSkills = record["missingSkills"].As<List<string>>();
+                res.Add(remaining);
+            });
+
+            return res;
+
+        }
+
         public void Dispose()
         {
             _driver?.Dispose();

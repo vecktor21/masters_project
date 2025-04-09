@@ -85,5 +85,12 @@ namespace Diplom.Controllers
             };
             return res;
         }
+
+        [HttpPost("remaining-skills-knowledges")]
+        public async Task<List<RemainingDataDto>> GetRemainingSkillsKnowledges([FromBody] KnownDataDto knownData)
+        {
+            var res = await standardsGraphRepository.GetRemainingSkillsKnowledges(knownData.PositionCard, knownData.KnownSkills, knownData.KnownKnowledges);
+            return res;
+        }
     }
 }
