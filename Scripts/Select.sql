@@ -104,10 +104,39 @@ WITH card1, card2,
      SIZE([f IN functions1 WHERE f IN functions2]) AS FunctionOverlapCount,
      SIZE([s IN skills1 WHERE s IN skills2]) AS SkillOverlapCount,
      SIZE([k IN knowledge1 WHERE k IN knowledge2]) AS KnowledgeOverlapCount
-
+where (FunctionOverlapCount + SkillOverlapCount + KnowledgeOverlapCount) <> 0
 // Step 5: Calculate total overlap and return results
 RETURN card1.Name AS Position1, card2.Name AS Position2,
        FunctionOverlapCount, SkillOverlapCount, KnowledgeOverlapCount,
        (FunctionOverlapCount + SkillOverlapCount + KnowledgeOverlapCount) AS TotalOverlap
 ORDER BY TotalOverlap DESC
+
+
+--востребованные навыки
+MATCH (:PositionFunction)-[:REQUIRES_SKILL]->(skill:Skill)
+RETURN skill.Name AS Skill, COUNT(skill) AS Demand
+ORDER BY Demand DESC
 LIMIT 10
+
+--востребованные знания
+MATCH (:PositionFunction)-[:REQUIRES_KNOWLEDGE]->(knowledge:Knowledge)
+RETURN knowledge.Name AS Knowledge, COUNT(knowledge) AS Demand
+ORDER BY Demand DESC
+LIMIT 10
+
+
+--получить все должности
+match(c:PositionCard) return distinct c.Name
+
+
+--дублирующиеся навыки по уровням
+MATCH (card:PositionCard {Name: "«Администратор баз данных»"})-[:HAS_FUNCTION]->(func:PositionFunction)
+MATCH (func)-[rel:REQUIRES_SKILL]->(skill:Skill)
+RETURN skill.Name AS Skill, COUNT(DISTINCT rel) AS SkillRelationCount
+ORDER BY SkillRelationCount DESC
+
+--дублирующиеся знания по уровням
+MATCH (card:PositionCard {Name: "«Администратор баз данных»"})-[:HAS_FUNCTION]->(func:PositionFunction)
+MATCH (func)-[rel:REQUIRES_KNOWLEDGE]->(knowledge:Knowledge)
+RETURN knowledge.Name AS Knowledge, COUNT(DISTINCT rel) AS KnowledgeRelationCount
+ORDER BY KnowledgeRelationCount DESC

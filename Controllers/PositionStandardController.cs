@@ -52,5 +52,38 @@ namespace Diplom.Controllers
 
             return Ok(roadmap);
         }
+
+        [HttpGet("demanded-skills-knowledges")]
+        public async Task<DemandedSkillsKnowledgesDto> GetDemandedSkillsKnowledges()
+        {
+            var skills = await standardsGraphRepository.GetMostInDemandSkills();
+            var knowledges = await standardsGraphRepository.GetMostInDemandKnowledges();
+            var res = new DemandedSkillsKnowledgesDto
+            {
+                Skills = skills,
+                Knowledges = knowledges
+            };
+            return res;
+        }
+
+        [HttpGet("overlapping-profession")]
+        public async Task<List<ProfessionOverlapDto>> GetOverlappingProfession()
+        {
+            var res = await standardsGraphRepository.GetOverlappingProfessions();
+            return res;
+        }
+
+        [HttpGet("overlapping-skills-knowledges")]
+        public async Task<SkillKnowledgeOverlapByOrkLevel> GetOverlappingSkillsKnowledges(string positionCard)
+        {
+            var skills = await standardsGraphRepository.GetOverlappingSkillsByPositionCardName(positionCard);
+            var knowledges = await standardsGraphRepository.GetOverlappingKnowledgesByPositionCardName(positionCard);
+            var res = new SkillKnowledgeOverlapByOrkLevel
+            {
+                SkillsOverlap = skills,
+                KnowledgesOverlap = knowledges
+            };
+            return res;
+        }
     }
 }

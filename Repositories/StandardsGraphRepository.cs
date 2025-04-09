@@ -358,6 +358,153 @@ namespace Diplom.Repositories
         }
 
 
+        public async Task<List<DemandDto>> GetMostInDemandSkills()
+        {
+            var skills = new List<DemandDto>();
+
+            var query = @"MATCH (:PositionFunction)-[:REQUIRES_SKILL]->(skill:Skill) 
+                RETURN skill.Name AS Skill, COUNT(skill) AS Demand 
+                ORDER BY Demand DESC 
+                LIMIT 15";
+
+            await using var session = _driver.AsyncSession();
+            var result = await session.RunAsync(query);
+
+            await result.ForEachAsync(record =>
+            {
+                var demand = new DemandDto();
+                demand.Name = record["Skill"].As<string>();
+                demand.Demand = record["Demand"].As<int>();
+                skills.Add(demand);
+            });
+
+            return skills;
+        }
+        public async Task<List<DemandDto>> GetMostInDemandKnowledges()
+        {
+            var knowledges = new List<DemandDto>();
+
+            var query = @"MATCH (:PositionFunction)-[:REQUIRES_KNOWLEDGE]->(knowledge:Knowledge)
+                RETURN knowledge.Name AS Knowledge, COUNT(knowledge) AS Demand
+                ORDER BY Demand DESC
+                LIMIT 15";
+
+            await using var session = _driver.AsyncSession();
+            var result = await session.RunAsync(query);
+
+            await result.ForEachAsync(record =>
+            {
+                var demand = new DemandDto();
+                demand.Name = record["Knowledge"].As<string>();
+                demand.Demand = record["Demand"].As<int>();
+                knowledges.Add(demand);
+            });
+
+            return knowledges;
+        }
+
+        public async Task<List<ProfessionOverlapDto>> GetOverlappingProfessions()
+        {
+            var query = @"// Step 1: Collect functions, skills, and knowledge for each PositionCard
+                MATCH (card:PositionCard)-[:HAS_FUNCTION]->(func:PositionFunction)
+                OPTIONAL MATCH (func)-[:REQUIRES_SKILL]->(skill:Skill)
+                OPTIONAL MATCH (func)-[:REQUIRES_KNOWLEDGE]->(knowledge:Knowledge)
+                WITH card, COLLECT(DISTINCT func) AS functions, 
+                     COLLECT(DISTINCT skill) AS skills, 
+                     COLLECT(DISTINCT knowledge) AS knowledge
+
+                // Step 2: Compare each PositionCard with every other PositionCard
+                WITH card AS card1, functions AS functions1, skills AS skills1, knowledge AS knowledge1
+                MATCH (card2:PositionCard)
+                WHERE card1 <> card2
+
+                // Step 3: Get functions, skills, and knowledge for the second card
+                OPTIONAL MATCH (card2)-[:HAS_FUNCTION]->(func2:PositionFunction)
+                OPTIONAL MATCH (func2)-[:REQUIRES_SKILL]->(skill2:Skill)
+                OPTIONAL MATCH (func2)-[:REQUIRES_KNOWLEDGE]->(knowledge2:Knowledge)
+                WITH card1, card2,
+                     functions1, skills1, knowledge1,
+                     COLLECT(DISTINCT func2) AS functions2,
+                     COLLECT(DISTINCT skill2) AS skills2,
+                     COLLECT(DISTINCT knowledge2) AS knowledge2
+
+                // Step 4: Calculate overlaps manually without nested aggregates
+                WITH card1, card2,
+                     SIZE([f IN functions1 WHERE f IN functions2]) AS FunctionOverlapCount,
+                     SIZE([s IN skills1 WHERE s IN skills2]) AS SkillOverlapCount,
+                     SIZE([k IN knowledge1 WHERE k IN knowledge2]) AS KnowledgeOverlapCount
+                where (FunctionOverlapCount + SkillOverlapCount + KnowledgeOverlapCount) <> 0
+                // Step 5: Calculate total overlap and return results
+                RETURN card1.Name AS Position1, card2.Name AS Position2,
+                       FunctionOverlapCount, SkillOverlapCount, KnowledgeOverlapCount,
+                       (FunctionOverlapCount + SkillOverlapCount + KnowledgeOverlapCount) AS TotalOverlap
+                ORDER BY TotalOverlap DESC";
+
+            var res = new List<ProfessionOverlapDto>();
+
+            await using var session = _driver.AsyncSession();
+            var result = await session.RunAsync(query);
+
+            await result.ForEachAsync(record =>
+            {
+                var overlap = new ProfessionOverlapDto();
+                overlap.Position1 = record["Position1"].As<string>();
+                overlap.Position2 = record["Position2"].As<string>();
+                overlap.FunctionOverlapCount= record["FunctionOverlapCount"].As<int>();
+                overlap.SkillOverlapCount = record["SkillOverlapCount"].As<int>();
+                overlap.KnowledgeOverlapCount = record["KnowledgeOverlapCount"].As<int>();
+                overlap.TotalOverlap = record["TotalOverlap"].As<int>();
+                res.Add(overlap);
+            });
+            return res;
+        }
+
+        public async Task<List<OverlapByOrkLevelsDto>> GetOverlappingSkillsByPositionCardName(string positionCard)
+        {
+            var skills = new List<OverlapByOrkLevelsDto>();
+
+            var query = @"MATCH (card:PositionCard {Name: $positionCard})-[:HAS_FUNCTION]->(func:PositionFunction)
+                MATCH (func)-[rel:REQUIRES_SKILL]->(skill:Skill)
+                RETURN skill.Name AS Name, COUNT(DISTINCT rel) AS Count
+                ORDER BY Count DESC";
+
+            await using var session = _driver.AsyncSession();
+            var result = await session.RunAsync(query, new { positionCard });
+
+            await result.ForEachAsync(record =>
+            {
+                var demand = new OverlapByOrkLevelsDto();
+                demand.Name = record["Name"].As<string>();
+                demand.OverlapCount = record["Count"].As<int>();
+                skills.Add(demand);
+            });
+
+            return skills;
+        }
+
+        public async Task<List<OverlapByOrkLevelsDto>> GetOverlappingKnowledgesByPositionCardName(string positionCard)
+        {
+            var knowledges = new List<OverlapByOrkLevelsDto>();
+
+            var query = @"MATCH (card:PositionCard {Name: $positionCard})-[:HAS_FUNCTION]->(func:PositionFunction)
+                MATCH (func)-[rel:REQUIRES_SKILL]->(skill:Skill)
+                RETURN skill.Name AS Name, COUNT(DISTINCT rel) AS Count
+                ORDER BY Count DESC";
+
+            await using var session = _driver.AsyncSession();
+            var result = await session.RunAsync(query, new { positionCard });
+
+            await result.ForEachAsync(record =>
+            {
+                var demand = new OverlapByOrkLevelsDto();
+                demand.Name = record["Name"].As<string>();
+                demand.OverlapCount = record["Count"].As<int>();
+                knowledges.Add(demand);
+            });
+
+            return knowledges;
+        }
+
         public void Dispose()
         {
             _driver?.Dispose();
